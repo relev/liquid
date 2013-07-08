@@ -44,7 +44,8 @@ module Liquid
   # forloop.last:: Returns true if the item is the last item.
   #
   class For < Block
-    Syntax = /\A(#{VariableSegment}+)\s+in\s+(#{QuotedFragment}+)\s*(reversed)?/o
+    Syntax = /(\w+)\s+in\s+(#{QuotedFragment}+)\s*(reversed)?/o
+    DebugSyntax = /\A(#{VariableSegment}+)\s+in\s+(#{QuotedFragment}+)\s*(reversed)?/o
 
     def initialize(tag_name, markup, tokens)
       if markup =~ Syntax
@@ -55,6 +56,10 @@ module Liquid
         @attributes = {}
         markup.scan(TagAttributes) do |key, value|
           @attributes[key] = value
+        end
+
+        if markup !~ DebugSyntax
+          Rails.logger.info("[LiquidDebug] variable_name='#{@variable_name}' collection_name='#{@collection_name}' markup='#{markup}'")
         end
       else
         raise SyntaxError.new("Syntax Error in 'for loop' - Valid syntax: for [item] in [collection]")
