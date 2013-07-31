@@ -213,6 +213,7 @@ module Liquid
           parts.each do |part|
             part = resolve($1) if part_resolved = (part =~ square_bracketed)
 
+            val = nil
             # If object is a hash- or array-like object we look for the
             # presence of the key and if its available we return it
             if object.respond_to?(:[]) and
@@ -220,8 +221,7 @@ module Liquid
                (object.respond_to?(:fetch) and part.is_a?(Integer)))
 
               # if its a proc we will replace the entry with the proc
-              res = lookup_and_evaluate(object, part)
-              object = res.to_liquid
+              object = lookup_and_evaluate(object, part)
 
               # Some special cases. If the part wasn't in square brackets and
               # no key with the same name was found we interpret following calls
@@ -234,13 +234,17 @@ module Liquid
                 else
                   object.send(part)
                 end
-              object = object.to_liquid
+
+            elsif (object.respond_to?(:[]) && !(val=object[part.to_sym]).nil?)
+              object = val
 
               # No key was present with the desired value and it wasn't one of the directly supported
               # keywords either. The only thing we got left is to return nil
             else
               return nil
             end
+
+            object = object.to_liquid if object.respond_to?(:to_liquid)
 
             # If we are dealing with a drop here we have to
             object.context = self if object.respond_to?(:context=)
