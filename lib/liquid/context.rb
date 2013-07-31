@@ -226,9 +226,15 @@ module Liquid
               # Some special cases. If the part wasn't in square brackets and
               # no key with the same name was found we interpret following calls
               # as commands and call them on the current object
-            elsif !part_resolved and object.respond_to?(part) and ['size', 'first', 'last'].include?(part)
+            elsif !part_resolved and object.respond_to?(part)
 
-              object = object.send(part.intern).to_liquid
+              object =
+                if ['size', 'first', 'last'].include?(part)
+                  object.send(part.intern)
+                else
+                  object.send(part)
+                end
+              object = object.to_liquid
 
               # No key was present with the desired value and it wasn't one of the directly supported
               # keywords either. The only thing we got left is to return nil
