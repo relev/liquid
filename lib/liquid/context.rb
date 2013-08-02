@@ -235,7 +235,7 @@ module Liquid
                   object.send(part)
                 end
 
-            elsif (object.respond_to?(:[]) && !(val=object[part.to_sym]).nil?)
+            elsif (object.respond_to?(:[]) && !object.instance_of?(Array) && !(val=object[part.instance_of?(String) ? part.to_sym : part]).nil?)
               object = val
 
               # No key was present with the desired value and it wasn't one of the directly supported
